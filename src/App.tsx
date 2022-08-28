@@ -11,11 +11,15 @@ let errors = 0;
 let startTime:Date;
 let counter = 0;
 let WPM:number;
+let gameEnd = false;
+
 //======================================================================== 
 function App() {
   let res = [];
+  const wpmRef = useRef<HTMLDivElement>(null)
   const timer = useRef<HTMLSpanElement>(null);
-  const blurWindow = useRef<HTMLDivElement>(null)
+  const blurWindow = useRef<HTMLDivElement>(null);
+
   for(let i = 0;i<temp.length;i++){
     res.push({
       letter:temp[i],
@@ -23,18 +27,19 @@ function App() {
       id:i
     })
   }
-  const [wordArray,setWordArray] = useState<Array<Iword>>(res);
 
+  const [wordArray,setWordArray] = useState<Array<Iword>>(res);
   const win = useRef<HTMLDivElement>(null);
- 
   const inpRef = useRef<HTMLInputElement>(null);
 
 
     function blurHandler(){
-    blurWindow.current!.style.display = 'flex'
+      if(gameEnd === false){
+        blurWindow.current!.style.display = 'flex'
+      }
     }
 
-  function StartTimer():void{
+    function StartTimer():void{
 
       function getTimerTime():number{
         return Math.floor((+new Date- (+startTime))/1000)
@@ -43,13 +48,14 @@ function App() {
    
         startTime = new Date();
         setInterval(()=>{
-          const grossWpm:number = ((typedLetters/5));
-
-          const Mins = (getTimerTime()/60);
-
-          WPM = (grossWpm - errors)/Mins <0?0:(((typedLetters/5)-errors)/(getTimerTime()/60));
-
-          timer.current!.innerText = Math.floor(WPM).toString()
+          //typedLetters
+          //errors
+          const Mins = (getTimerTime()/ 60);
+          const numberOfWords:number = ((typedLetters/5));
+         
+          const out =  (numberOfWords-(errors/5))/Mins
+          WPM = out <0?0:out;
+          timer.current!.innerText =Math.round(WPM).toString()
         },1000)
     }
 
@@ -57,13 +63,15 @@ function App() {
   }
  
   function gameStart():void{
-      
+      gameEnd = false
       inpRef.current!.focus();
       win.current!.style.display = 'none'
   
   }
   function retry():void{
-    str = randomWords(25)
+    counter = 0
+    gameEnd = false
+    str = randomWords(30)
     temp =str.split('');
 
       setWordArray((prev)=>{
@@ -84,24 +92,30 @@ function App() {
 
 
   function endGame():void{
+
+    gameEnd = true
     win.current!.style.display = 'flex';
+    wpmRef.current!.innerText = `WPM ${Math.round(WPM).toString()}`
     inpRef.current!.blur();
     inpRef.current!.value = '';
     index = -1;
     typedLetters = 0;
     errors = 0;
+   
 } 
 
 
+   useEffect(()=>{
+    function preventEv(event:Event){
+     let ctrl= (event as KeyboardEvent).ctrlKey;
+      
+      console.log(ctrl)
+      
+    }
 
-
-
-
-
-
-  useEffect(()=>{
-  
+    window.addEventListener('keypress',(e)=>{preventEv(e)});
     return ()=>{
+      window.removeEventListener('keypress',(e)=>{preventEv(e)});
       gameStart()
     }
   },[])
@@ -113,17 +127,6 @@ function App() {
     endGame()
   }
   },[str,index]);
-
-
-
-
-
-
-
-
-
-
-
 
 
   const changeHandler = (e:FormEvent)=>{
@@ -145,7 +148,7 @@ function App() {
         
       }else{
        
-        typedLetters-=1
+  
         index--
         setWordArray((prev)=>{
           prev[index+1].correct = null
@@ -193,10 +196,12 @@ function App() {
      
       <input type="text" ref={inpRef} style={{top:'-10%',position:'absolute'}} onBlur={blurHandler} onChange={StartTimer} onInput={(e)=>{changeHandler(e)}} />
       <div className='window' ref={win}>
-        <div>
+        <div className='wrp1'>
         <button onClick={retry}>Try Again</button>
+        <div ref={wpmRef}>
+    
         </div>
-     
+        </div>
       </div>
       <div id='blur' ref={blurWindow} onClick={(e)=>{ inpRef.current!.focus();(e.target as HTMLDivElement).style.display = 'none'}}>
         continue
