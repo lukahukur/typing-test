@@ -1,3 +1,4 @@
+
 *{
   box-sizing: border-box;
 }
@@ -25,9 +26,50 @@ body{
     transform: translate(0,-50%);
 }
 .curr{
-border-bottom: 4px solid rgb(0, 213, 255);
+border-bottom: 5px solid rgb(0, 255, 229);
 height: 30px;
 }
 #height{
   height: 30px;
+}
+#timer{
+  font-size: 1.2rem;
+  color: aqua;
+}
+#timerWrapper{
+  font-size: 1.2rem;
+  color: rgb(255, 0, 255);
+}
+.window{
+  background-color: black;
+  position: absolute;
+  flex-wrap: wrap;
+  flex-direction: row;
+  margin:0 auto;
+  left: 0;
+  right: 0;
+  top:40%;
+  transform: translate(0,-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 210px;
+  width: 700px;
+  border: 1px solid skyblue;
+  box-shadow: 4px 4px rgb(2, 238, 255);
+}
+.window:after {
+  content:"";
+  border-bottom: 1px dashed #ff0000;
+  position: relative;
+}
+.window button{
+  font-size: 1.2rem;
+  cursor: pointer;
+  width: 130px;
+  height: 50px;
+  border: 1px solid skyblue;
+  background-color: black;
+  color: rgb(255, 0, 255);
+  box-shadow: 2px 2px purple;
 }
