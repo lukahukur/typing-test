@@ -73,3 +73,24 @@ height: 30px;
   color: rgb(255, 0, 255);
   box-shadow: 2px 2px purple;
 }
+#blur{
+  font-size: 1.4rem;
+  border: 1px solid skyblue;
+  width: 600px;
+  position: absolute;
+  flex-wrap: wrap;
+  flex-direction: row;
+  margin:0 auto;
+  left: 0;
+  right: 0;
+  top:40%;
+  transform: translate(0,-50%);
+  color: rgb(0, 238, 255);
+  background-color: black;
+  height: 70px;
+  align-items: center;
+  display: none;
+  justify-content: center;
+  box-shadow: 2px 2px purple;
+ 
+}

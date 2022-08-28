@@ -15,7 +15,7 @@ let WPM:number;
 function App() {
   let res = [];
   const timer = useRef<HTMLSpanElement>(null);
-  
+  const blurWindow = useRef<HTMLDivElement>(null)
   for(let i = 0;i<temp.length;i++){
     res.push({
       letter:temp[i],
@@ -30,7 +30,9 @@ function App() {
   const inpRef = useRef<HTMLInputElement>(null);
 
 
-
+    function blurHandler(){
+    blurWindow.current!.style.display = 'flex'
+    }
 
   function StartTimer():void{
 
@@ -189,13 +191,16 @@ function App() {
       }
       </div>
      
-      <input type="text" ref={inpRef}  style={{top:'-10%',position:'absolute'}} onChange={StartTimer} onInput={(e)=>{changeHandler(e)}} />
+      <input type="text" ref={inpRef} style={{top:'-10%',position:'absolute'}} onBlur={blurHandler} onChange={StartTimer} onInput={(e)=>{changeHandler(e)}} />
       <div className='window' ref={win}>
         <div>
         <button onClick={retry}>Try Again</button>
         </div>
-       
+     
       </div>
+      <div id='blur' ref={blurWindow} onClick={(e)=>{ inpRef.current!.focus();(e.target as HTMLDivElement).style.display = 'none'}}>
+        continue
+       </div>
     </div>
   );
 }
