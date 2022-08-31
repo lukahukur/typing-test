@@ -2,8 +2,8 @@ import React,{useState,useEffect,useRef, ChangeEvent, FormEvent} from 'react';
 import randomWords from './functions/randomWords'
 import { Iword } from './interface/interface';
 
-
 let index:number = -1;
+
 /**
  * @str here we generate random words
  * @temp string to array
@@ -26,7 +26,7 @@ let gameEnd = false;
 let isGameStarted = false;
 //======================================================================== 
 function App() {
-  
+
   let res:Array<Iword> = [];
 
   const wpmRef = useRef<HTMLDivElement>(null)
@@ -48,6 +48,8 @@ function App() {
   }
 
   const [wordArray,setWordArray] = useState<Array<Iword>>(res);
+
+ 
   /**
    * window that contains restart button and average WPM
    */
