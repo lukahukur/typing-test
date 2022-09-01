@@ -24,6 +24,7 @@ let counter = 0;
 let WPM:number;
 let gameEnd = false;
 let isGameStarted = false;
+
 //======================================================================== 
 function App() {
 
@@ -37,19 +38,20 @@ function App() {
    *                              @letter :string
    *                              @correct : null : boolean
    *                              @id : number
+   *                              @current : boolean
    *                                }
    */
   for(let i = 0;i<temp.length;i++){
     res.push({
       letter:temp[i],
       correct:null,
-      id:i
+      id:i,
+      current:false
     })
   }
 
   const [wordArray,setWordArray] = useState<Array<Iword>>(res);
 
- 
   /**
    * window that contains restart button and average WPM
    */
@@ -99,7 +101,7 @@ function App() {
           //check net WPM algo
           const Mins = (getTimerTime()/ 60);
           const numberOfWords:number = ((typedLetters/5));
-          const out =  (numberOfWords-(errors))/Mins;
+          const out =  (numberOfWords-(errors/5))/Mins;
           WPM = out <0?0:out;
           timer.current!.innerText =Math.round(WPM).toString();
 
@@ -108,6 +110,8 @@ function App() {
     //u know 
     counter+=1
   }
+      
+
   //this function just focuses cursor on input and hides restart window
   function gameStart():void{
       gameEnd = false
@@ -132,7 +136,8 @@ function App() {
             prev.push({
               letter:temp[i],
               correct:null,
-              id:i
+              id:i,
+              current:false
             })
             }
               return prev  
@@ -188,7 +193,8 @@ function App() {
     //index --- increases with each keystroke
     //str --- u know
     if(index === str.length-1){
-      endGame()
+      endGame();
+      
     }
   },[str,index]);
 
@@ -211,6 +217,15 @@ function App() {
       } 
       
         setWordArray((prev)=>{
+          //cursor simulation
+          if(index>=0){
+            //cleaning up
+            prev[index].current = false;
+          }
+          if(index<str.length-1){
+            prev[index+1].current = true
+          }
+         
           //checking if word is correct
           prev[index].correct = val[index] === str[index]// true||false
           return [...prev]
@@ -228,6 +243,11 @@ function App() {
           //true === green
           //red - u know
         setWordArray((prev)=>{
+          //cursor simulation
+          prev[index+2].current = false;
+          //cleaning up 
+          prev[index+1].current = true;
+
           prev[index+1].correct = null
           return [...prev]
          })
@@ -236,37 +256,81 @@ function App() {
           errors-=1
         }
       }
-    
+  }
+   /**
+   * @HTMLOUT is a function which is making an array of words of an array of letters
+   *          logic is very simple 
+   *          if array[index] is an empty string (' ')
+   *          create a new array of letters behind of this empty string 
+   *          ['w','o','r','d',' ','l','o','l'] =>
+   *          [['w','o','r','d'],[' '],['l','o','l']]
+   */
+
+  function HTMLOUT():Iword[][]{
+    let response:Iword[][] =[];
+    //left is left border
+    let left = 0
+    for(let i = 0;i<wordArray.length;i++){
+      let container:Iword[] = []
+      //here we put an empty string 
+      let Space:Iword[] = []
+      //
+        if(wordArray[i].letter === ' '){
+          for(let j = left;j<=i;j++){
+            
+            if(wordArray[j].letter === ' '){
+              Space.push(wordArray[j])
+            }
+            else{
+              container.push(wordArray[j])
+            }
+          }
+          left = i+1
+          response.push(container)
+          response.push(Space)
+          
+        }//putting last word into array 
+        else if(i === wordArray.length-1){
+          for(let j = left;j<wordArray.length;j++){
+            container.push(wordArray[j])
+          }
+          response.push(container)
+        }
+    }
+
+    return response
   }
 
-  /**
-   * @htmlOut is just mapping array 
-   */
-  let htmlOut = wordArray.map((letter,i)=>{
+  function returnStyle(e:boolean | null,space?:boolean,element?:Iword){
+    let res;
+        //making red underline if user does not hit spacebar
+        if(space === true ){
+          //////for spacebar there are different styels
+                                  //if current === true -> blue underline       //if user entered incorrect symbol -> red underline
+          res = element!.current? {borderBottom:'5px solid rgb(0, 255, 229)'}:e === false?{borderBottom:'2px solid #FF0000'}:{}
+        
+        }else{
+          //syles for letters
+          res = e===null?{color:'#6E7F80'}:e?{color:'#50FF78'}:{color:'#FF0000'}
+        }
+        return res
+  }
+ 
+  let resp:JSX.Element[] = HTMLOUT().map((elem,ind)=>{
+    //wrapping letters
+     return<div key={ind}>{ elem.map((letter,i)=>{
 
-    function returnStyle(e:boolean | null,space?:boolean){
-      let res;
-          //making red underline if user does not hit spacebar
-          if(space === true && index >= i){
-          
-             res = e===null?{borderBottom:'none',}:e === true?{borderBottom:'none'}:{borderBottom:'2px solid #FF0000'}
-          
-          }else{
-            res = e===null?{color:'#6E7F80'}:e?{color:'#50FF78'}:{color:'#FF0000'}
-          }
-          return res
-    }
-    //making spaces with &nbsp;
-    if(letter.letter === ' '){
-                                          //cursor is jsut border bottom 
-      return <span id ='height'className={i === index+1?'curr':' '} key={i} style={returnStyle(letter.correct,true)}>&nbsp;</span>
-    }
-    else{
-      return <span  className={i === index+1?'curr':' '} key={i} style={returnStyle(letter.correct)}>{letter.letter}</span>
-     }
+      if(letter.letter === ' '){//styles for spacebar
+                                      
+        return <span  id ='height'  key={i} style={returnStyle(letter.correct,true,letter)}>&nbsp;</span>
+      }
+      else{// styles for letters
 
-  });
+        return <span  className={letter.current?'curr':''} key={i} style={returnStyle(letter.correct)}>{letter.letter}</span>
+       }
 
+     })}</div>
+});
 
   return (
     <div className="App">
@@ -275,7 +339,7 @@ function App() {
     
       <div className="wordWrapper">
       {
-        htmlOut
+       resp
       }
       </div>
      
