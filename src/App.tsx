@@ -3,6 +3,7 @@ import randomWords from './functions/randomWords'
 import { Iword } from './interface/interface';
 
 let index:number = -1;
+const w_c = 40;
 
 /**
  * @str here we generate random words
@@ -15,7 +16,7 @@ let index:number = -1;
  * @gameEnd game ends after user entered all of the characters
  * @isGameStarted useEffect fires twice (Facebook fuck you)
  */
-let str = randomWords(30);
+let str = randomWords(w_c);
 let temp = str.split('');
 let typedLetters = 0;
 let errors = 0;
@@ -24,12 +25,14 @@ let counter = 0;
 let WPM:number;
 let gameEnd = false;
 let isGameStarted = false;
-
+let secArr = [15,30,60,120];
 //======================================================================== 
 function App() {
 
   let res:Array<Iword> = [];
-
+  const [timeLimit,setTimeLimit] = useState<number>(30);
+  const [timerState,setTimerState] = useState<number>(0)
+  const [showTime,setST] = useState<boolean>(false)
   const wpmRef = useRef<HTMLDivElement>(null)
   const timer = useRef<HTMLSpanElement>(null);
   const blurWindow = useRef<HTMLDivElement>(null);
@@ -70,19 +73,18 @@ function App() {
         blurWindow.current!.style.display = 'flex'
       }
     }
-
+   /**
+     * 
+     * @returns time that has passed since user started typing 
+     */
+    function getTimerTime():number{
+        return Math.floor((+new Date- (+startTime))/1000)
+    }
     /**
      * after writting the word
      * start the timer
      */
     function StartTimer():void{
-      /**
-       * 
-       * @returns time that has passed since user started typing 
-       */
-      function getTimerTime():number{
-        return Math.floor((+new Date- (+startTime))/1000)
-      }
       /**
        * @counter we need counter because function runs every time user hits the key
        * function should start timer only once , when user starts typing
@@ -91,6 +93,8 @@ function App() {
        * @counter increases with every keypress
        */
     if(counter === 0){
+      setTimerState(0)
+      setST(true)
         //setting start time
         startTime = new Date();
         setInterval(()=>{
@@ -103,7 +107,9 @@ function App() {
           const numberOfWords:number = ((typedLetters/5));
           const out =  (numberOfWords-(errors/5))/Mins;
           WPM = out <0?0:out;
-          timer.current!.innerText =Math.round(WPM).toString();
+          if(Math.round(WPM) !== Infinity ){
+            timer.current!.innerText =Math.round(WPM).toString();
+          }
 
         },1000)
     }
@@ -126,7 +132,7 @@ function App() {
     gameEnd = false
     //generating new 30 words
     //open folder functions and check how it works
-    str = randomWords(30)
+    str = randomWords(w_c)
     //str to arr
     temp =str.split('');
 
@@ -149,7 +155,7 @@ function App() {
 
   //u know
   function endGame():void{
-
+    setST(false)
     gameEnd = true
     win.current!.style.display = 'flex';
     wpmRef.current!.innerText = `WPM ${Math.round(WPM).toString()}`
@@ -160,7 +166,33 @@ function App() {
     errors = 0;
    
 } 
+  function updateWords(){
+    inpRef.current!.value = '';
+    str = randomWords(w_c);
+    temp =str.split('');
+    index = -1;
+    setWordArray((prev)=>{
+      prev = []
+        for(let i = 0;i<temp.length;i++){
+        prev.push({
+                letter:temp[i],
+                correct:null,
+                id:i,
+                current:false
+          })
+        }
+      return prev  
+    })
 
+  }
+
+   useEffect(()=>{
+
+    if(index === str.length-1){
+      updateWords();
+    }
+    
+  },[str,index]);
 
    useEffect(()=>{
     /**
@@ -174,29 +206,31 @@ function App() {
       }
     }
 
+    const interval = setInterval(()=>{
+      //if the time is up
+      if(getTimerTime() === timeLimit){
+        endGame()
+      }
+      //setting timerState 
+      if(getTimerTime()){
+        setTimerState(getTimerTime())
+      }
+      
+    },1000);
+
     if(isGameStarted === false){
       gameStart()
     }
     inpRef.current!.addEventListener('keydown',(e)=>{preventEv(e)});
     return ()=>{
+      clearInterval(interval)
       inpRef.current!.removeEventListener('keydown',(e)=>{preventEv(e)});
       isGameStarted = true;
     }
-  },[])
+  },[timeLimit])
 
 
-  /**
-   * if there are no more words 
-   *  end the game 
-   */
-  useEffect(()=>{
-    //index --- increases with each keystroke
-    //str --- u know
-    if(index === str.length-1){
-      endGame();
-      
-    }
-  },[str,index]);
+
 
 
   const changeHandler = (e:FormEvent)=>{
@@ -332,17 +366,39 @@ function App() {
      })}</div>
 });
 
+  const changeTimeLimit = (e:number)=>{
+    setTimeLimit(e)
+  }
+  const listOfSec = secArr.map((elem)=>{
+    return (
+    <button className='btn_t' onClick={()=>{changeTimeLimit(elem)}}
+     style={timeLimit === elem ? {color:'aqua'}:{color:'rgb(110, 127, 128)'}}
+     >{elem}<span className='sec'>s</span>
+    </button>
+    )
+  })
   return (
     <div className="App">
-    
-        <span id='timerWrapper'>~<span id='timer' ref={timer}>0</span></span>
-    
-      <div className="wordWrapper">
-      {
-       resp
-      }
-      </div>
-     
+
+          
+
+      <span className='centerWrp'>
+      <span className='Wrp_num'>
+            <span id='timerWrapper'>~<span id='wpm' ref={timer}>0</span></span>
+            <span id='time'>
+
+    <span id='changeTime'> {showTime? timerState+'/'+timeLimit+'s': <span>Set Time:<span>
+        {listOfSec}
+    </span>
+    </span>
+    }</span>
+   
+              
+            </span>
+          </span>
+        <div className="wordWrapper">{resp}</div>
+      </span>
+
       <input type="text" ref={inpRef} style={{top:'-10%',position:'absolute'}} onBlur={blurHandler} onChange={StartTimer} onInput={(e)=>{changeHandler(e)}} />
       <div className='window' ref={win}>
         <div className='wrp1'>
@@ -353,7 +409,7 @@ function App() {
         </div>
       </div>
       <div id='blur' ref={blurWindow} onClick={(e)=>{ inpRef.current!.focus();(e.target as HTMLDivElement).style.display = 'none'}}>
-        continue
+        continue typing
        </div>
     </div>
   );

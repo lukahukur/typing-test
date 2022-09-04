@@ -11,20 +11,7 @@ body{
   display: flex;
   flex-direction: column;
 }
-.wordWrapper{
-    font-size: 25px;
-    min-width: 700px;
-    max-width: 1000px;
-    display: flex;
-    position: absolute;
-    flex-wrap: wrap;
-    flex-direction: row;
-    margin:0 auto;
-    left: 0;
-    right: 0;
-    top:40%;
-    transform: translate(0,-50%);
-}
+
 .curr{
 border-bottom: 5px solid rgb(0, 255, 229);
 height: 30px;
@@ -32,7 +19,7 @@ height: 30px;
 #height{
   height: 30px;
 }
-#timer{
+#wpm{
   font-size: 1.2rem;
   color: aqua;
 }
@@ -86,6 +73,7 @@ height: 30px;
   font-size: 1.4rem;
   margin-top: 15px;
 }
+
 #blur{
   font-size: 1.4rem;
   border: 1px solid skyblue;
@@ -106,4 +94,46 @@ height: 30px;
   justify-content: center;
   box-shadow: 2px 2px purple;
  
+}
+
+.wordWrapper{
+  font-size: 25px;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.centerWrp{
+  position: absolute;
+  margin:0 auto;
+  min-width: 700px;
+  max-width: 1000px;
+  left: 0;
+  right: 0;
+  top:40%;
+  transform: translate(0,-50%);
+}
+
+.Wrp_num{
+  height: 30px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.sec{
+  color: rgb(255, 0, 255);
+}
+
+#changeTime{
+  font-family: monospace;
+  background-color: transparent;
+  color: aqua;
+  font-size: 1.2rem
+}
+.btn_t{
+  background-color: transparent;
+  font-family: monospace;
+  background-color: transparent;
+  color: rgb(110, 127, 128);
+  font-size: 1.2rem
 }

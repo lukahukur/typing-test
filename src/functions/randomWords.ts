@@ -6,5 +6,6 @@ export default function randomWords<T extends number>(limit:T){
     for(let i = 0;i<limit;i++){
         out.push(arrOfWords[Math.floor(Math.random()*arrOfWords.length)])
     }
+    out.push('')
     return out.join(' ')
 }
