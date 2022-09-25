@@ -35,7 +35,7 @@ function App() {
   const [showTime,setST] = useState<boolean>(false)
   const wpmRef = useRef<HTMLDivElement>(null)
   const timer = useRef<HTMLSpanElement>(null);
-  const blurWindow = useRef<HTMLDivElement>(null);
+  const blurTxTwrp = useRef<HTMLDivElement>(null);
   /**
    * 1 letter === 1 object,that contains {
    *                              @letter :string
@@ -70,7 +70,7 @@ function App() {
    */
     function blurHandler(){
       if(gameEnd === false){
-        blurWindow.current!.style.display = 'flex'
+          blurTxTwrp.current!.style.display = 'block'
       }
     }
    /**
@@ -155,10 +155,11 @@ function App() {
 
   //u know
   function endGame():void{
+
     setST(false)
     gameEnd = true
     win.current!.style.display = 'flex';
-    wpmRef.current!.innerText = `WPM ${Math.round(WPM).toString()}`
+   wpmRef.current!.innerText = Math.round(WPM) ?`WPM ${Math.round(WPM).toString()}`:''
     inpRef.current!.blur();
     inpRef.current!.value = '';
     index = -1;
@@ -195,16 +196,7 @@ function App() {
   },[str,index]);
 
    useEffect(()=>{
-    /**
-     * 
-     * @function preventEv is handling ctrl+backspace event 
-     */
-    function preventEv(event:Event){
-     let keyEvent= (event as KeyboardEvent)
-      if(keyEvent.keyCode===8 && keyEvent.ctrlKey){
-        event.preventDefault()
-      }
-    }
+
 
     const interval = setInterval(()=>{
       //if the time is up
@@ -221,14 +213,33 @@ function App() {
     if(isGameStarted === false){
       gameStart()
     }
-    inpRef.current!.addEventListener('keydown',(e)=>{preventEv(e)});
+  
     return ()=>{
       clearInterval(interval)
-      inpRef.current!.removeEventListener('keydown',(e)=>{preventEv(e)});
+    
       isGameStarted = true;
     }
   },[timeLimit])
 
+
+
+  useEffect(()=>{
+   /**
+     * 
+     * @function preventEv is handling ctrl+backspace event 
+     */
+         function preventEv(event:Event){
+          let keyEvent= (event as KeyboardEvent)
+           if((keyEvent.keyCode===8 && keyEvent.ctrlKey) || keyEvent.keyCode === 37 || keyEvent.keyCode === 38 || keyEvent.keyCode === 39 || keyEvent.keyCode === 40){
+             event.preventDefault()
+           }
+        };
+
+    inpRef.current!.addEventListener('keydown',preventEv);
+    return()=>{
+      inpRef.current!.removeEventListener('keydown',preventEv);
+    }
+  },[])
 
 
 
@@ -369,37 +380,34 @@ function App() {
   const changeTimeLimit = (e:number)=>{
     setTimeLimit(e)
   }
-  const listOfSec = secArr.map((elem)=>{
+  const listOfSec = secArr.map((elem,key)=>{
     return (
-    <button className='btn_t' onClick={()=>{changeTimeLimit(elem)}}
+    <button key={key} className='btn_t' onClick={()=>{changeTimeLimit(elem)}}
      style={timeLimit === elem ? {color:'aqua'}:{color:'rgb(110, 127, 128)'}}
      >{elem}<span className='sec'>s</span>
     </button>
     )
   })
+function focusHndl(){
+    blurTxTwrp.current!.style.display = 'none';
+}
   return (
     <div className="App">
-
-          
 
       <span className='centerWrp'>
       <span className='Wrp_num'>
             <span id='timerWrapper'>~<span id='wpm' ref={timer}>0</span></span>
+            <span ref={blurTxTwrp} style={{fontSize:'1.1rem'}}>click Text To focus</span>
             <span id='time'>
-
-    <span id='changeTime'> {showTime? timerState+'/'+timeLimit+'s': <span>Set Time:<span>
-        {listOfSec}
-    </span>
-    </span>
-    }</span>
-   
-              
+    <span id='changeTime'> {showTime? timerState+'/'+timeLimit+'s': <span>Set Time:<span> {listOfSec}</span> </span>}</span>
             </span>
           </span>
-        <div className="wordWrapper">{resp}</div>
+        <div className="wordWrapper" onClick={()=>{inpRef.current!.focus()}}>{resp}</div>
+        
+       <div style={{display:'flex',justifyContent:'center',alignItems:'center'}}><button onClick={endGame} style={{border:'none',background:'transparent',color:'aqua',fontSize:'1.6rem'}}>&#8634;</button></div>
       </span>
 
-      <input type="text" ref={inpRef} style={{top:'-10%',position:'absolute'}} onBlur={blurHandler} onChange={StartTimer} onInput={(e)=>{changeHandler(e)}} />
+      <input type="text" ref={inpRef} style={{top:'-10%',position:'absolute'}}  onBlur={blurHandler}  onFocus={focusHndl} onChange={StartTimer} onInput={(e)=>{changeHandler(e)}} />
       <div className='window' ref={win}>
         <div className='wrp1'>
         <button onClick={retry}>Try Again</button>
@@ -408,9 +416,6 @@ function App() {
         </div>
         </div>
       </div>
-      <div id='blur' ref={blurWindow} onClick={(e)=>{ inpRef.current!.focus();(e.target as HTMLDivElement).style.display = 'none'}}>
-        continue typing
-       </div>
     </div>
   );
 }

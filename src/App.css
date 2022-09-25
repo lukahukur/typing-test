@@ -1,4 +1,5 @@
 
+
 *{
   box-sizing: border-box;
 }
@@ -32,6 +33,7 @@ height: 30px;
   position: absolute;
   flex-wrap: wrap;
   flex-direction: row;
+  z-index: 1000;
   margin:0 auto;
   left: 0;
   right: 0;
